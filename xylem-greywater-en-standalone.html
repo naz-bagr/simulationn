@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Xylem Greywater System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: animation board on the left, stage list and phone dashboard on the right; parts index below. */
+:root{
+  --bg:#F3F8F7; --surface:#FFFFFF; --fg:#0E2A33; --muted:#4B6670; --line:#DCE8E6;
+  --accent:#0B7A75; --accent-fg:#FFFFFF; --accent-soft:#DDF1EF; --ink:#12355B;
+  --ok-bg:#DFF3E7; --ok-fg:#14612F; --warn-bg:#FFF1D6; --warn-fg:#7A4700;
+  --info-bg:#ECEAFB; --info-fg:#2F2580; --note-bg:#DDF1EF; --note-fg:#0B5F5B;
+  --font-body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-head:"Space Grotesk",Inter,system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B181C; --surface:#12262B; --fg:#E6F1EF; --muted:#9DB6B3; --line:#244048;
+    --accent:#3FB8B0; --accent-fg:#06211F; --accent-soft:#163A3C; --ink:#9CC3F0;
+    --ok-bg:#17352A; --ok-fg:#8FD9A8; --warn-bg:#3A2E10; --warn-fg:#F0C675;
+    --info-bg:#26224A; --info-fg:#B9B3F5; --note-bg:#12332F; --note-fg:#8FE0D8;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B181C; --surface:#12262B; --fg:#E6F1EF; --muted:#9DB6B3; --line:#244048;
+  --accent:#3FB8B0; --accent-fg:#06211F; --accent-soft:#163A3C; --ink:#9CC3F0;
+  --ok-bg:#17352A; --ok-fg:#8FD9A8; --warn-bg:#3A2E10; --warn-fg:#F0C675;
+  --info-bg:#26224A; --info-fg:#B9B3F5; --note-bg:#12332F; --note-fg:#8FE0D8;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1100px;margin:0 auto}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--font-head);font-size:clamp(28px,5vw,40px);line-height:1.1;margin:6px 0 8px;text-wrap:balance}
+h2{font-family:var(--font-head);font-size:19px;line-height:1.2;margin:0}
+.lead{max-width:62ch;color:var(--muted);margin:0 0 20px}
+.grid{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.grid{grid-template-columns:minmax(0,560px) minmax(0,1fr);align-items:start}}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sheet{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#F3F8F7}
+#sch{display:block;width:100%;height:auto;aspect-ratio:680/720}
+#sch text{font-family:var(--font-body)}
+#sch .th{font-size:13px;font-weight:600}
+#sch .ts{font-size:12px;font-weight:500}
+
+#sch .pz{transition:stroke .6s}
+#sch.s-oz .pz{stroke:#7F77DD}
+#sch .hv{transform-box:fill-box;transform-origin:center;transition:transform .8s}
+#sch .hv.cl{transform:scaleX(.15)}
+#sch .ball{transform-box:fill-box;transform-origin:center;transition:transform .9s cubic-bezier(.4,0,.2,1)}
+#sch .ball.cl{transform:rotate(90deg)}
+#sch .dot{transition:fill .4s}
+#sch .wat{transition:fill 1s}
+#sch .gl{opacity:0;transition:opacity .6s}
+#sch.s-oz .gl{opacity:.3}
+#sch.s-rest .gl{opacity:.35;animation:glw 1.4s ease-in-out infinite alternate}
+@keyframes glw{to{opacity:.12}}
+#sch.s-vert .bub{animation:bb 1.1s linear infinite}
+@keyframes bb{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-14px);opacity:.2}}
+#sch.s-sig .si{animation:sin .6s linear infinite}
+#sch.s-act .so{animation:sfw .6s linear infinite}
+#sch.s-net .sw{animation:sfw .6s linear infinite}
+@keyframes sin{to{stroke-dashoffset:9}}
+@keyframes sfw{to{stroke-dashoffset:-9}}
+#sch .pl{opacity:0;fill:none;stroke:#D85A30;stroke-width:2.5;transform-box:fill-box;transform-origin:center}
+#sch .pl.show{animation:pls 1s ease-out infinite}
+@keyframes pls{0%{opacity:1;transform:scale(.85)}100%{opacity:0;transform:scale(1.3)}}
+#sch #nb{opacity:0;transition:opacity .4s}
+#sch #nb.show{opacity:1}
+#sch #hand,#sch #strm,#sch .sb{opacity:0;transition:opacity .4s}
+#sch.s-wash #hand,#sch.s-wash #strm{opacity:1}
+#sch #hd{animation:rub .45s ease-in-out infinite alternate;animation-play-state:paused}
+#sch.s-wash #hd{animation-play-state:running}
+@keyframes rub{from{transform:translateX(-5px)}to{transform:translateX(5px)}}
+#sch.s-wash .sb{opacity:.9;animation:sbf 2s ease-in-out infinite alternate}
+@keyframes sbf{to{transform:translateY(-5px)}}
+#sch .spin{transform-box:fill-box;transform-origin:center;animation:spn 1s linear infinite;animation-play-state:paused}
+#sch .spin.on{animation-play-state:running}
+@keyframes spn{to{transform:rotate(360deg)}}
+#sch.s-led .led{animation:bk .4s steps(2) infinite}
+@keyframes bk{50%{opacity:.15}}
+#sch .drf{animation:dr 2s ease-in-out infinite alternate}
+@keyframes dr{0%{transform:translate(0,0)}100%{transform:translate(4px,-5px)}}
+#sch.paused *{animation-play-state:paused !important}
+
+.ctl{display:flex;flex-wrap:wrap;gap:8px}
+.btn{min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);font:inherit;font-weight:500;cursor:pointer}
+.btn.main{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn:focus-visible,.st:focus-visible,.chip:focus-visible,.lk:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.stages{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.st{display:flex;gap:12px;align-items:flex-start;width:100%;min-height:44px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);font:inherit;cursor:pointer}
+.st .num{flex:none;width:26px;height:26px;border-radius:13px;background:var(--line);display:grid;place-items:center;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.st .tx{min-width:0}
+.st b{font-weight:600}
+.st .sd{display:none;color:var(--muted);font-size:14px;margin-top:4px}
+.st[aria-current="step"]{border-color:var(--accent);background:var(--accent-soft)}
+.st[aria-current="step"] .num{background:var(--accent);color:var(--accent-fg)}
+.st[aria-current="step"] .sd{display:block}
+
+.panel{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:14px 16px}
+.phead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.seg{display:flex;background:var(--bg);border-radius:10px;padding:3px;gap:3px}
+.seg span{padding:5px 12px;border-radius:8px;font-size:13px;color:var(--muted)}
+.seg span.on{background:var(--surface);color:var(--fg);font-weight:600;border:1px solid var(--line)}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+@media (max-width:420px){.tiles{grid-template-columns:minmax(0,1fr)}}
+.tile{background:var(--bg);border-radius:10px;padding:10px 12px}
+.tile .l{font-size:12px;color:var(--muted)}
+.tile .v{font-size:15px;font-weight:600;margin-top:2px}
+.bd{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.bd.ok{background:var(--ok-bg);color:var(--ok-fg)}
+.bd.warn{background:var(--warn-bg);color:var(--warn-fg)}
+.bd.info{background:var(--info-bg);color:var(--info-fg)}
+.nbar{margin-top:10px;padding:8px 12px;border-radius:10px;background:var(--note-bg);color:var(--note-fg);font-size:13px;font-weight:600}
+.fine{font-size:12px;color:var(--muted);margin:10px 0 0}
+
+.parts{margin-top:32px;display:flex;flex-direction:column;gap:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--fg);font:inherit;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.detail{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:14px 16px;max-width:760px}
+.detail h3{font-family:var(--font-head);font-size:18px;margin:0 0 4px}
+.row{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;margin-top:8px;font-size:14px}
+.row b{font-weight:600;color:var(--muted);font-size:13px}
+.lks{display:flex;flex-wrap:wrap;gap:6px}
+.lk{min-height:34px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:13px;cursor:pointer}
+.note{margin-top:28px;max-width:70ch;font-size:13px;color:var(--muted)}
+</style>
+
+<style>[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Xylem · Ozone greywater recovery</div>
+  <h1>How does sink water return to the toilet?</h1>
+  <p class="lead">The water from washing your hands passes through filters and fills the toilet cistern. When the sensors find a problem, the Arduino starts an ozone cleaning cycle. Pick a stage or just watch.</p>
+</header>
+
+<div class="grid">
+<div class="col">
+<div class="sheet">
+<svg id="sch" viewBox="0 0 680 720" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animated connection diagram of the ozone greywater system"><title>Ozone greywater system animation</title><desc>The camera zooms to each stage. Dirt is trapped as sink water passes the filters, sensors detect the problem, the Arduino starts ozone cleaning, the ball valves turn, the LCD shows the status and the phone gets a notification.</desc>
+<rect x="0" y="0" width="680" height="720" rx="12" style="fill:#F3F8F7;stroke:#DCE8E6"/>
+<rect x="20" y="14" width="640" height="36" rx="8" style="fill:#12355B"/>
+<text class="th" x="340" y="32" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">Ozone greywater recovery system · animation</text>
+
+<g fill="none" stroke-width="7">
+<path d="M62 176V200H119" stroke="#8E9AA0"/><path d="M159 200H189" stroke="#8E9AA0"/>
+<path class="pz" d="M189 200H222" stroke="#8E9AA0"/><path class="pz" d="M290 200H330" stroke="#8E9AA0"/><path class="pz" d="M398 200H412" stroke="#8E9AA0"/><path class="pz" d="M438 200H468" stroke="#8E9AA0"/><path class="pz" d="M494 200H520" stroke="#8E9AA0"/>
+<path d="M590 242V300" stroke="#8E9AA0"/>
+<path d="M22 440H97" stroke="#378ADD"/><path d="M137 440H189V410" stroke="#378ADD"/><path d="M520 92H560V120" stroke="#378ADD"/>
+<path d="M189 310V203" stroke="#7F77DD"/>
+</g>
+<g fill="none" stroke-width="1.5" stroke-dasharray="5 4" style="stroke:#D85A30">
+<path class="sg si" d="M395 500L425 214"/><path class="sg si" d="M410 500L481 214"/><path class="sg si" d="M425 500L540 242"/><path class="sg si" d="M290 500L240 366"/>
+<path class="sg so" d="M270 550L117 453"/><path class="sg so" d="M270 560H8V232H139V213"/>
+<path class="sg sw" d="M430 533H458"/><path class="sg sw" d="M530 533H564"/>
+</g>
+<circle cx="425" cy="214" r="3" style="fill:#D85A30"/><circle cx="481" cy="214" r="3" style="fill:#D85A30"/><circle cx="540" cy="242" r="3" style="fill:#D85A30"/><circle cx="240" cy="366" r="3" style="fill:#D85A30"/><circle cx="117" cy="453" r="3" style="fill:#D85A30"/><circle cx="139" cy="213" r="3" style="fill:#D85A30"/>
+
+<rect x="22" y="140" width="80" height="36" rx="8" style="fill:#E8EEF0;stroke:#8CA3A0" stroke-width="1.5"/>
+<path d="M40 140V120Q40 108 52 108H70V116" fill="none" stroke-width="5" stroke-linecap="round" style="stroke:#6B7C85"/>
+<line id="strm" x1="70" y1="117" x2="70" y2="136" stroke-width="3" stroke-linecap="round" style="stroke:#9CC8E6"/>
+
+<rect x="222" y="186" width="68" height="28" rx="5" style="fill:#1E5FD0"/><rect x="228" y="214" width="56" height="100" rx="10" style="fill:#EAF4FB;stroke:#7FA8C9" stroke-width="1.5"/><rect x="246" y="224" width="20" height="82" rx="3" style="fill:#F1E4CC;stroke:#C8B48E" stroke-width="1"/><rect class="gl" x="228" y="214" width="56" height="100" rx="10" style="fill:#7F77DD"/>
+<rect x="330" y="186" width="68" height="28" rx="5" style="fill:#1E5FD0"/><rect x="336" y="214" width="56" height="100" rx="10" style="fill:#EAF4FB;stroke:#7FA8C9" stroke-width="1.5"/><rect x="346" y="222" width="36" height="84" rx="4" style="fill:#2B2F33"/><rect class="gl" x="336" y="214" width="56" height="100" rx="10" style="fill:#7F77DD"/>
+<circle cx="354" cy="240" r="1.6" style="fill:#7A8288"/><circle cx="374" cy="236" r="1.6" style="fill:#7A8288"/><circle cx="356" cy="264" r="1.6" style="fill:#7A8288"/><circle cx="374" cy="276" r="1.6" style="fill:#7A8288"/><circle cx="358" cy="292" r="1.6" style="fill:#7A8288"/><circle cx="374" cy="298" r="1.6" style="fill:#7A8288"/>
+
+<rect x="450" y="68" width="70" height="48" rx="8" style="fill:#CFE6F5;stroke:#378ADD" stroke-width="1.5"/><rect x="452" y="84" width="66" height="30" rx="6" style="fill:#8EC3EA"/><text class="th" x="485" y="99" text-anchor="middle" dominant-baseline="central" style="fill:#0C447C">2 L</text>
+<rect x="514" y="120" width="132" height="12" rx="4" style="fill:#D5DEE3;stroke:#8CA3A0" stroke-width="1"/><rect x="520" y="132" width="120" height="110" rx="8" style="fill:#F4F7F8;stroke:#8CA3A0" stroke-width="1.5"/>
+<rect id="wat" class="wat" x="522" y="187" width="116" height="53" rx="6" fill="#9CC8E6"/>
+<line x1="522" y1="172" x2="638" y2="172" stroke-width="1.2" stroke-dasharray="4 3" style="stroke:#E24B4A"/><text class="ts" x="636" y="164" text-anchor="end" dominant-baseline="central" style="fill:#B3261E">overflow</text>
+<line id="arm" x1="576" y1="150" x2="616" y2="188" stroke-width="2" style="stroke:#6B7C85"/><circle cx="576" cy="150" r="3" style="fill:#6B7C85"/><circle id="ball" cx="616" cy="188" r="8" style="fill:#F2994A;stroke:#B5651D" stroke-width="1"/>
+<text id="lv" class="th" x="570" y="222" text-anchor="middle" dominant-baseline="central" style="fill:#0C447C">3,1 L</text>
+<rect x="548" y="300" width="84" height="16" rx="6" style="fill:#E3EAED;stroke:#8CA3A0" stroke-width="1"/><path d="M554 316Q554 370 590 370Q626 370 626 316Z" style="fill:#F4F7F8;stroke:#8CA3A0" stroke-width="1.5"/><ellipse cx="590" cy="336" rx="26" ry="6" style="fill:#9CC8E6"/>
+
+<rect x="159" y="310" width="60" height="100" rx="14" style="fill:#D9D5F5;stroke:#534AB7" stroke-width="1.5"/><rect x="183" y="302" width="12" height="10" style="fill:#534AB7"/>
+<circle class="bub" cx="176" cy="372" r="3" style="fill:#FFFFFF;stroke:#7F77DD"/><circle class="bub" cx="198" cy="380" r="3" style="fill:#FFFFFF;stroke:#7F77DD;animation-delay:.4s"/><circle class="bub" cx="181" cy="356" r="3" style="fill:#FFFFFF;stroke:#7F77DD;animation-delay:.8s"/><circle class="bub" cx="202" cy="358" r="3" style="fill:#FFFFFF;stroke:#7F77DD;animation-delay:.2s"/><circle class="bub" cx="189" cy="344" r="3" style="fill:#FFFFFF;stroke:#7F77DD;animation-delay:.6s"/>
+<text class="th" x="189" y="396" text-anchor="middle" dominant-baseline="central" style="fill:#3C3489">O₃</text>
+<path d="M219 352H226" stroke-width="3" style="stroke:#534AB7"/><circle cx="240" cy="352" r="14" style="fill:#FFFFFF;stroke:#534AB7" stroke-width="1.5"/><path d="M231 358A12 12 0 1 1 249 358" fill="none" stroke-width="1" style="stroke:#B5B2D8"/>
+<path d="M240 341V344M229 352H232M248 352H251" stroke-width="1" style="stroke:#8D88C9"/>
+<line id="nd" x1="240" y1="352" x2="240" y2="341" stroke-width="2" stroke-linecap="round" style="stroke:#E24B4A;transform-box:view-box;transform-origin:240px 352px;transform:rotate(25deg);transition:transform 1.1s ease-in-out"/>
+<rect x="14" y="430" width="8" height="20" rx="2" style="fill:#6B7C85"/>
+
+<rect x="270" y="500" width="160" height="66" rx="6" style="fill:#0F6E56;stroke:#085041" stroke-width="1.5"/><rect x="262" y="516" width="14" height="24" rx="2" style="fill:#9AA7AD"/><rect x="300" y="516" width="40" height="28" rx="2" style="fill:#2B2F33"/><rect x="350" y="504" width="70" height="8" rx="1" style="fill:#2B2F33"/><rect x="350" y="554" width="70" height="8" rx="1" style="fill:#2B2F33"/>
+<circle cx="362" cy="530" r="3.5" style="fill:#4ADE80"/><circle class="led" cx="376" cy="530" r="3.5" style="fill:#F59E0B"/><circle class="led" cx="390" cy="530" r="3.5" style="fill:#60A5FA"/>
+<path d="M285 566V612M415 566V612" fill="none" stroke-width="2" style="stroke:#6B7C85"/>
+<rect x="255" y="612" width="170" height="52" rx="5" style="fill:#2B2F33"/><rect x="263" y="618" width="154" height="40" rx="3" style="fill:#A9CE52"/>
+<text id="lc1" class="ts" x="271" y="631" dominant-baseline="central" style="font-family:monospace;fill:#1F3A0B"></text>
+<text id="lc2" class="ts" x="271" y="647" dominant-baseline="central" style="font-family:monospace;fill:#1F3A0B"></text>
+<rect id="p14" class="pl" x="258" y="494" width="176" height="78" rx="8"/>
+<rect x="460" y="510" width="70" height="46" rx="6" style="fill:#E3EAED;stroke:#6B7C85" stroke-width="1.5"/><circle cx="495" cy="546" r="2.5" style="fill:#1E5FD0"/><path d="M486 539Q495 531 504 539" fill="none" stroke-width="2" stroke-linecap="round" style="stroke:#1E5FD0"/><path d="M481 533Q495 520 509 533" fill="none" stroke-width="2" stroke-linecap="round" style="stroke:#1E5FD0"/>
+<rect x="566" y="494" width="60" height="78" rx="10" style="fill:#FFFFFF;stroke:#4B6670" stroke-width="2"/><rect x="572" y="506" width="48" height="54" rx="4" style="fill:#DDF1EF"/><circle id="phR" cx="596" cy="530" r="12" style="fill:none;stroke:#0B7A75" stroke-width="4"/><text id="phT" class="ts" x="596" y="552" text-anchor="middle" dominant-baseline="central" style="fill:#0B5F5B">Clean</text>
+<rect id="p16" class="pl" x="560" y="488" width="72" height="90" rx="12"/>
+<g id="nb"><rect x="544" y="436" width="116" height="42" rx="8" style="fill:#12355B"/><path d="M590 478L596 486L602 478Z" style="fill:#12355B"/><text class="ts" x="602" y="451" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">Cleaning done</text><text class="ts" x="602" y="467" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">Ready to flush</text></g>
+
+<g id="pt"></g>
+
+<rect x="119" y="188" width="40" height="24" rx="5" style="fill:#C9A24B;stroke:#8A6D2A" stroke-width="1"/>
+<g id="b1" class="ball"><circle cx="139" cy="200" r="9" style="fill:#EFE3B8;stroke:#8A6D2A" stroke-width="1"/><rect x="130" y="197.5" width="18" height="5" rx="2" style="fill:#8E9AA0"/></g>
+<rect x="136" y="176" width="6" height="12" style="fill:#8A6D2A"/><rect id="h1" class="hv" x="121" y="168" width="36" height="8" rx="3" style="fill:#1E5FD0"/><circle id="d1" class="dot" cx="154" cy="192" r="3.5" fill="#1E7A46" stroke="#FFFFFF" stroke-width="1"/>
+<circle id="p1" class="pl" cx="139" cy="200" r="26"/>
+<rect x="97" y="428" width="40" height="24" rx="5" style="fill:#C9A24B;stroke:#8A6D2A" stroke-width="1"/>
+<g id="b2" class="ball cl"><circle cx="117" cy="440" r="9" style="fill:#EFE3B8;stroke:#8A6D2A" stroke-width="1"/><rect x="108" y="437.5" width="18" height="5" rx="2" style="fill:#378ADD"/></g>
+<rect x="114" y="416" width="6" height="12" style="fill:#8A6D2A"/><rect id="h2" class="hv cl" x="99" y="408" width="36" height="8" rx="3" style="fill:#1E5FD0"/><circle id="d2" class="dot" cx="132" cy="432" r="3.5" fill="#C2410C" stroke="#FFFFFF" stroke-width="1"/>
+<circle id="p2" class="pl" cx="117" cy="440" r="26"/>
+
+<rect x="412" y="188" width="26" height="24" rx="4" style="fill:#1D9E75;stroke:#0F6E56" stroke-width="1"/>
+<g id="spn" class="spin"><path d="M419 200H431M425 194V206" stroke-width="1.6" stroke-linecap="round" style="stroke:#FFFFFF"/></g>
+<rect x="468" y="188" width="26" height="24" rx="4" style="fill:#1D9E75;stroke:#0F6E56" stroke-width="1"/><circle id="csd" cx="481" cy="200" r="5.5" fill="#E8F4FA" stroke="#FFFFFF" stroke-width="1.5" style="transition:fill .6s"/>
+<circle id="p5" class="pl" cx="425" cy="200" r="18"/><circle id="p6" class="pl" cx="481" cy="200" r="18"/>
+<circle id="p9" class="pl" cx="485" cy="92" r="40"/><circle id="pb" class="pl" cx="616" cy="172" r="16"/><circle id="p11" class="pl" cx="240" cy="352" r="22"/>
+
+<g id="hand"><g id="hd"><rect x="50" y="134" width="26" height="12" rx="6" style="fill:#F2C9A0;stroke:#C9966A" stroke-width="1"/><rect x="76" y="135" width="12" height="3" rx="1.5" style="fill:#F2C9A0;stroke:#C9966A" stroke-width=".8"/><rect x="76" y="139" width="14" height="3" rx="1.5" style="fill:#F2C9A0;stroke:#C9966A" stroke-width=".8"/><rect x="76" y="143" width="11" height="3" rx="1.5" style="fill:#F2C9A0;stroke:#C9966A" stroke-width=".8"/></g></g>
+<circle class="sb" cx="34" cy="158" r="3.5" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle class="sb" cx="92" cy="162" r="3" style="fill:#FFFFFF;stroke:#8CA3A0;animation-delay:.5s"/><circle class="sb" cx="46" cy="168" r="2.5" style="fill:#FFFFFF;stroke:#8CA3A0;animation-delay:1s"/>
+
+<g>
+<rect x="22" y="58" width="84" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="35" cy="70" r="10" style="fill:#12355B"/><text class="ts" x="35" y="70" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">1</text><text class="th" x="50" y="70" dominant-baseline="central" style="fill:#0E2A33">Sink</text>
+<rect x="98" y="138" width="84" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="111" cy="150" r="10" style="fill:#12355B"/><text class="ts" x="111" y="150" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">2</text><text class="th" x="126" y="150" dominant-baseline="central" style="fill:#0E2A33">Valve 1</text>
+<rect x="210" y="118" width="91" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="223" cy="130" r="10" style="fill:#12355B"/><text class="ts" x="223" y="130" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">3</text><text class="th" x="238" y="130" dominant-baseline="central" style="fill:#0E2A33">Ceramic</text>
+<rect x="312" y="118" width="129" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="325" cy="130" r="10" style="fill:#12355B"/><text class="ts" x="325" y="130" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">4</text><text class="th" x="340" y="130" dominant-baseline="central" style="fill:#0E2A33">Active carbon</text>
+<rect x="368" y="150" width="68" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="381" cy="162" r="10" style="fill:#12355B"/><text class="ts" x="381" y="162" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">5</text><text class="th" x="396" y="162" dominant-baseline="central" style="fill:#0E2A33">Flow</text>
+<rect x="444" y="150" width="68" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="457" cy="162" r="10" style="fill:#12355B"/><text class="ts" x="457" y="162" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">6</text><text class="th" x="472" y="162" dominant-baseline="central" style="fill:#0E2A33">Color</text>
+<rect x="566" y="82" width="106" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="579" cy="94" r="10" style="fill:#12355B"/><text class="ts" x="579" y="94" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">7</text><text class="th" x="594" y="94" dominant-baseline="central" style="fill:#0E2A33">Cistern</text>
+<rect x="560" y="382" width="84" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="573" cy="394" r="10" style="fill:#12355B"/><text class="ts" x="573" y="394" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">8</text><text class="th" x="588" y="394" dominant-baseline="central" style="fill:#0E2A33">Toilet</text>
+<rect x="344" y="66" width="99" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="357" cy="78" r="10" style="fill:#12355B"/><text class="ts" x="357" y="78" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">9</text><text class="th" x="372" y="78" dominant-baseline="central" style="fill:#0E2A33">Backup</text>
+<rect x="36" y="322" width="114" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="49" cy="334" r="10" style="fill:#12355B"/><text class="ts" x="49" y="334" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">10</text><text class="th" x="64" y="334" dominant-baseline="central" style="fill:#0E2A33">Ozone tank</text>
+<rect x="262" y="340" width="106" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="275" cy="352" r="10" style="fill:#12355B"/><text class="ts" x="275" y="352" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">11</text><text class="th" x="290" y="352" dominant-baseline="central" style="fill:#0E2A33">Gauge</text>
+<rect x="18" y="462" width="84" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="31" cy="474" r="10" style="fill:#12355B"/><text class="ts" x="31" y="474" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">12</text><text class="th" x="46" y="474" dominant-baseline="central" style="fill:#0E2A33">Valve 2</text>
+<rect x="18" y="380" width="122" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="31" cy="392" r="10" style="fill:#12355B"/><text class="ts" x="31" y="392" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">13</text><text class="th" x="46" y="392" dominant-baseline="central" style="fill:#0E2A33">Mains water</text>
+<rect x="306" y="574" width="88" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="319" cy="586" r="10" style="fill:#12355B"/><text class="ts" x="319" y="586" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">14</text><text class="th" x="334" y="586" dominant-baseline="central" style="fill:#0E2A33">Arduino</text>
+<rect x="456" y="564" width="76" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="469" cy="576" r="10" style="fill:#12355B"/><text class="ts" x="469" y="576" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">15</text><text class="th" x="484" y="576" dominant-baseline="central" style="fill:#0E2A33">Wi-Fi</text>
+<rect x="548" y="582" width="91" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="561" cy="594" r="10" style="fill:#12355B"/><text class="ts" x="561" y="594" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">16</text><text class="th" x="576" y="594" dominant-baseline="central" style="fill:#0E2A33">Phone</text>
+<rect x="440" y="624" width="104" height="24" rx="6" style="fill:#FFFFFF;stroke:#8CA3A0"/><circle cx="453" cy="636" r="10" style="fill:#12355B"/><text class="ts" x="453" y="636" text-anchor="middle" dominant-baseline="central" style="fill:#FFFFFF">17</text><text class="th" x="468" y="636" dominant-baseline="central" style="fill:#0E2A33">LCD</text>
+</g>
+
+<circle cx="28" cy="700" r="5" style="fill:#1E7A46"/><text class="ts" x="38" y="700" dominant-baseline="central" style="fill:#0E2A33">Open</text>
+<circle cx="78" cy="700" r="5" style="fill:#C2410C"/><text class="ts" x="88" y="700" dominant-baseline="central" style="fill:#0E2A33">Closed</text>
+<circle cx="146" cy="700" r="4" style="fill:#7A5A2E"/><text class="ts" x="156" y="700" dominant-baseline="central" style="fill:#0E2A33">Dirt</text>
+<circle cx="220" cy="700" r="4" style="fill:#D9B44A"/><text class="ts" x="230" y="700" dominant-baseline="central" style="fill:#0E2A33">Color/odor</text>
+<circle cx="300" cy="700" r="4" style="fill:#FFFFFF;stroke:#7F77DD" stroke-width="1.2"/><text class="ts" x="310" y="700" dominant-baseline="central" style="fill:#0E2A33">Ozone</text>
+<rect x="350" y="697" width="24" height="6" style="fill:#8E9AA0"/><text class="ts" x="380" y="700" dominant-baseline="central" style="fill:#0E2A33">Greywater</text>
+<rect x="442" y="697" width="24" height="6" style="fill:#378ADD"/><text class="ts" x="472" y="700" dominant-baseline="central" style="fill:#0E2A33">Clean water</text>
+<rect x="546" y="697" width="24" height="6" style="fill:#7F77DD"/><text class="ts" x="576" y="700" dominant-baseline="central" style="fill:#0E2A33">Ozone water</text>
+</svg>
+</div>
+<div class="ctl">
+  <button class="btn" id="pv" type="button">Previous</button>
+  <button class="btn main" id="pp" type="button">Pause</button>
+  <button class="btn" id="nx" type="button">Next</button>
+</div>
+</div>
+
+<div class="col">
+  <ol class="stages" id="scs" aria-label="Stages"></ol>
+  <section class="panel" aria-label="Phone app dashboard">
+    <div class="phead"><h2>Phone app</h2><div class="seg"><span id="mA" class="on">Automatic</span><span id="mM">Manual</span></div></div>
+    <div class="tiles">
+      <div class="tile"><div class="l">Turbidity</div><div class="v" id="v1t">Clean</div><span class="bd ok" id="b1x">Normal</span></div>
+      <div class="tile"><div class="l">Flow rate</div><div class="v" id="v2t">Normal</div><span class="bd ok" id="b2x">Normal</span></div>
+      <div class="tile"><div class="l">Tank pressure</div><div class="v" id="v3t">Sufficient</div><span class="bd ok" id="b3x">Ready</span></div>
+    </div>
+    <div class="nbar" id="nbar" hidden>Cleaning complete · you can flush the toilet</div>
+    <p class="fine">Dashboard values are sample data.</p>
+  </section>
+</div>
+</div>
+
+<section class="parts" aria-label="Parts index">
+  <h2>Parts and connections</h2>
+  <div class="chips" id="chips"></div>
+  <div class="detail" id="detail" aria-live="polite"></div>
+</section>
+
+<p class="note">The physical placement of the filters is an assumption made for the drawing: separate housings outside the toilet, in series on the pipe between the sink and the cistern. It is also assumed that the ozone line joins between Valve 1 and the ceramic filter, and that backup water feeds the cistern from the top. If the real installation differs, the diagram should be updated to match.</p>
+</div>
+
+<script>
+function G(i){return document.getElementById(i);}
+var svg=G('sch'),pt=G('pt'),NS='http://www.w3.org/2000/svg';
+var CL=['s-wash','s-oz','s-vert','s-sig','s-act','s-net','s-rest','s-led'];
+var PLS=['p1','p2','p5','p6','p9','p11','p14','p16','pb'];
+var timers=[],cur=0,paused=false,lvl=.77,raf=0,cvr=0,vb=[0,0,680,720],ps=[],stuck=[],drifts=[],open1=true,open2=false;
+var stt={wash:0,clean:0,bk:0,fl:0,dirt:.2,col:.12,leak:0};
+var CAM={F:[0,0,680,720],W:[0,60,430,455],M:[210,50,470,498],Z:[0,215,460,487],V:[0,140,500,529],L:[190,360,340,360],Ph:[380,402,300,318],Bk:[380,40,300,318],K:[380,110,300,318]};
+function mk(p){var c=[0];for(var i=1;i<p.length;i++)c[i]=c[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);return{p:p,c:c,L:c[c.length-1]};}
+function pos(R,s){var p=R.p,c=R.c,i=1;while(i<p.length-1&&c[i]<s)i++;var k=(s-c[i-1])/((c[i]-c[i-1])||1);k=Math.max(0,Math.min(1,k));return[p[i-1][0]+(p[i][0]-p[i-1][0])*k,p[i-1][1]+(p[i][1]-p[i-1][1])*k];}
+var P1=[[70,121],[70,136],[66,160],[62,176],[62,200],[119,200],[159,200],[189,200],[222,200],[237,200],[237,288],[256,288],[256,200],[290,200],[330,200],[341,200],[341,296],[364,296],[364,200],[398,200],[412,200],[438,200],[468,200],[494,200],[520,200],[560,204]];
+var R1=mk(P1),R2=mk([[22,440],[97,440],[137,440],[189,440],[189,408]]),R4=mk([[189,396],[189,200]].concat(P1.slice(8))),R5=mk([[520,92],[560,92],[560,122],[560,168]]),R6=mk([[590,242],[590,300],[590,336]]);
+R1.vb=R1.c[5];R1.blk=function(){return open1;};R2.vb=R2.c[1];R2.blk=function(){return open2;};
+var TY={water:{f:'#FFFFFF',s:'#4B6670',r:1.8},dirt:{f:'#7A5A2E',s:'',r:2.4},color:{f:'#D9B44A',s:'',r:2},oz:{f:'#FFFFFF',s:'#7F77DD',r:2.4},clean:{f:'#BFE0F7',s:'#378ADD',r:2}};
+function circ(t,x,y){var T=TY[t],e=document.createElementNS(NS,'circle');e.setAttribute('r',T.r);e.setAttribute('fill',T.f);if(T.s){e.setAttribute('stroke',T.s);e.setAttribute('stroke-width','.8');}e.setAttribute('cx',x);e.setAttribute('cy',y);pt.appendChild(e);return e;}
+function sp(R,t,o){var a=pos(R,0),p={e:circ(t,a[0],a[1]),R:R,t:t,s:0,v:150*(.9+Math.random()*.2),q:Math.random()*14,stop:null,fade:0,fo:1};if(o)for(var k in o)p[k]=o[k];ps.push(p);}
+function rm(e){if(e.parentNode)e.parentNode.removeChild(e);}
+function seed(n){while(stuck.length<n){stuck.push(circ('dirt',244+Math.random()*2,234+Math.random()*58));}}
+function dissolve(){if(!stuck.length)return;var e=stuck.splice(Math.floor(Math.random()*stuck.length),1)[0];e.style.transition='opacity .7s, fill .3s';e.style.fill='#7F77DD';requestAnimationFrame(function(){e.style.opacity=0;});setTimeout(function(){rm(e);},800);}
+function clearAll(){ps.forEach(function(p){rm(p.e);});ps=[];stuck.forEach(rm);stuck=[];}
+function mkDrift(n){for(var i=0;i<n;i++){var f=Math.random()<.5,x=f?232+Math.random()*48:340+Math.random()*48,y=220+Math.random()*86;var e=circ('oz',x,y);e.setAttribute('class','drf');e.style.animationDuration=(1.4+Math.random()*1.6)+'s';e.style.animationDelay=(-Math.random()*2)+'s';drifts.push(e);}
+ [[205,200],[310,200],[455,200],[505,200],[189,260],[189,300]].forEach(function(a){var e=circ('oz',a[0],a[1]);e.setAttribute('class','drf');drifts.push(e);});}
+function rmDrift(){drifts.forEach(rm);drifts=[];}
+var last=0;
+function loop(t){var dt=Math.min(.05,(t-last)/1000);last=t;
+ if(!paused){for(var i=ps.length-1;i>=0;i--){var p=ps[i];
+  if(p.fade){p.fo-=dt*2;p.e.setAttribute('opacity',Math.max(0,p.fo));if(p.fo<=0){rm(p.e);ps.splice(i,1);}continue;}
+  var ns=p.s+p.v*dt;
+  if(p.R.blk&&!p.R.blk()&&p.s<=p.R.vb)ns=Math.max(p.s,Math.min(ns,p.R.vb-p.q));
+  if(p.stop!==null&&ns>=p.stop){if(p.t==='dirt'){var y=pos(p.R,p.stop)[1];p.e.setAttribute('cx',245);p.e.setAttribute('cy',y);stuck.push(p.e);ps.splice(i,1);}else{p.fade=1;p.fo=1;}continue;}
+  if(ns>=p.R.L){rm(p.e);ps.splice(i,1);continue;}
+  p.s=ns;var a=pos(p.R,ns);p.e.setAttribute('cx',a[0]);p.e.setAttribute('cy',a[1]);}}
+ requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+setInterval(function(){if(paused)return;
+ if(stt.wash&&open1){sp(R1,'water');if(Math.random()<stt.dirt){var lk=Math.random()<stt.leak;sp(R1,'dirt',{stop:lk?null:R1.c[9]+40+Math.random()*44});}if(Math.random()<stt.col)sp(R1,'color',{stop:R1.c[17]+14+Math.random()*58});}
+ if(stt.clean){if(open2)sp(R2,'clean');sp(R4,'oz');}
+ if(stt.bk){sp(R5,'clean');}
+ if(stt.fl){sp(R6,'water');sp(R6,'water',{v:120});}
+},140);
+function cam(n,ms){cancelAnimationFrame(cvr);var a=vb.slice(),b=CAM[n],t0=performance.now();ms=ms||1200;function f(t){var k=Math.min(1,(t-t0)/ms),e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;vb=a.map(function(v,i){return v+(b[i]-v)*e;});svg.setAttribute('viewBox',vb.join(' '));if(k<1)cvr=requestAnimationFrame(f);}cvr=requestAnimationFrame(f);}
+function paint(){var y=240-68*lvl,w=G('wat');w.setAttribute('y',y);w.setAttribute('height',68*lvl);G('ball').setAttribute('cy',y);G('arm').setAttribute('y2',y);G('lv').textContent=(lvl*4).toFixed(1).replace('.',',')+' L';}
+function T(to,ms){cancelAnimationFrame(raf);var f0=lvl,t0=performance.now();function f(t){var k=Math.min(1,(t-t0)/ms);lvl=f0+(to-f0)*k;paint();if(k<1)raf=requestAnimationFrame(f);}raf=requestAnimationFrame(f);}
+function Lv(v){cancelAnimationFrame(raf);lvl=v;paint();}
+function tm(ms,fn){timers.push(setTimeout(fn,ms));}
+function c(n,on){svg.classList.toggle(n,!!on);}
+function P(i,on){G(i).classList.toggle('show',!!on);}
+function V(n,o){if(n===1)open1=o;else open2=o;G('h'+n).classList.toggle('cl',!o);G('b'+n).classList.toggle('cl',!o);G('d'+n).setAttribute('fill',o?'#1E7A46':'#C2410C');}
+function N(d){G('nd').style.transform='rotate('+d+'deg)';}
+function turb(on){G('wat').setAttribute('fill',on?'#BBAA84':'#9CC8E6');}
+function led(col){G('csd').setAttribute('fill',col);}
+function spin(on,d){var s=G('spn');s.classList.toggle('on',!!on);if(d)s.style.animationDuration=d+'s';}
+function lcd(a,b){G('lc1').textContent=a;G('lc2').textContent=b;}
+function ph(t,col){G('phT').textContent=t;G('phR').setAttribute('stroke',col);}
+function mode(m){G('mA').classList.toggle('on',m==='a');G('mM').classList.toggle('on',m==='m');}
+function B(id,t,txt,k){G('v'+id+'t').textContent=t;var b=G('b'+id+'x');b.textContent=txt;b.className='bd '+k;}
+function R(){stt.wash=0;stt.clean=0;stt.bk=0;stt.fl=0;stt.leak=0;CL.forEach(function(n){c(n,0);});PLS.forEach(function(i){P(i,0);});G('nb').classList.remove('show');G('nbar').hidden=true;rmDrift();spin(0);mode('a');}
+function dloop(){if(!stt.clean)return;dissolve();tm(260,dloop);}
+function ok(){B(1,'Clean','Normal','ok');B(2,'Normal','Normal','ok');B(3,'Sufficient','Ready','ok');}
+var S=[
+{n:'Hand washing',t:'Hand washing: greywater is filtered',d:'Sink water carries dirt and soap past Valve 1. The ceramic filter traps dirty particles on its surface (brown dots build up). The activated carbon filter absorbs color and odor (yellow dots disappear). Clean water passes the sensors and fills the cistern.',ms:12500,f:function(){R();clearAll();Lv(.77);V(1,1);V(2,0);stt.wash=1;stt.dirt=.22;stt.col=.12;c('s-wash',1);spin(1,.5);led('#E8F4FA');turb(0);N(25);ok();ph('Clean','#0B7A75');lcd('System: AUTO','Water flowing');T(.86,10000);cam('W',1200);tm(6500,function(){cam('M',1400);lcd('System: AUTO','Level 3.4L');});}},
+{n:'Sensors',t:'Sensors notice a problem',d:'When the ceramic filter fills up, some dirt starts to get through. The color sensor sees the turbidity rise and the flow sensor\'s wheel slows down. The Arduino shows the warning on the LCD and starts the 3-step cleaning cycle.',ms:12000,f:function(){R();clearAll();Lv(.86);V(1,1);V(2,0);seed(14);stt.wash=1;stt.dirt=.6;stt.col=.4;c('s-wash',1);spin(1,.6);led('#E8F4FA');turb(0);cam('W',1000);tm(3000,function(){stt.leak=.6;cam('M',1300);});tm(4800,function(){led('#7A5A2E');turb(1);spin(1,1.8);c('s-sig',1);P('p5',1);P('p6',1);B(1,'High','Over limit','warn');B(2,'Low','Reduced','warn');ph('ALERT','#C2410C');T(.9,5000);});tm(8000,function(){stt.wash=0;c('s-wash',0);P('p5',0);P('p6',0);cam('L',1300);c('s-led',1);P('p14',1);lcd('!! WARNING !!','TURBID. HIGH');});tm(9800,function(){lcd('Flow: LOW','Starting clean');});}},
+{n:'Step 1',t:'Step 1: Ozone pressure is checked',d:'The Arduino first reads the ozone tank\'s pressure gauge. If the pressure is enough, the LCD shows "OK" and cleaning moves on.',ms:8500,f:function(){R();clearAll();Lv(.9);V(1,1);V(2,0);seed(24);turb(1);led('#7A5A2E');B(1,'High','Over limit','warn');B(2,'Low','Reduced','warn');ph('ALERT','#C2410C');cam('Z',1300);c('s-led',1);c('s-sig',1);P('p14',1);P('p11',1);lcd('CLEANING 1/3','Checking press.');N(-75);B(3,'Checking','Measuring','info');tm(1500,function(){N(25);});tm(3300,function(){lcd('Pressure: OK','Starting clean');B(3,'Sufficient','Ready','ok');P('p11',0);});}},
+{n:'Step 2',t:'Step 2: Ozonated water cleans the filters',d:'Valve 1 closes (the ball valve turns) and Valve 2 opens. Clean water passes through the ozone tank and becomes ozonated. Purple bubbles dissolve the dirt in the filters, then the water flows through the pipes into the cistern. When the float reaches the overflow point, Valve 2 closes.',ms:16500,f:function(){R();clearAll();Lv(.9);V(1,1);V(2,0);seed(24);turb(1);led('#7A5A2E');cam('V',1200);c('s-led',1);c('s-act',1);P('p14',1);lcd('CLEANING 2/3','Setting valves');tm(1000,function(){V(1,0);V(2,1);lcd('CLEANING 2/3','V1:SHUT V2:OPEN');P('p1',1);P('p2',1);});tm(2800,function(){P('p1',0);P('p2',0);stt.clean=1;c('s-oz',1);c('s-vert',1);spin(1,.8);dloop();});tm(5200,function(){cam('W',1400);});tm(8000,function(){T(1,4500);});tm(9200,function(){cam('M',1400);turb(0);led('#E8F4FA');});tm(12000,function(){P('pb',1);});tm(13200,function(){P('pb',0);stt.clean=0;c('s-vert',0);cam('V',1300);});tm(13800,function(){V(2,0);P('p2',1);lcd('Overflow! V2 OFF','Closing valve 2');});tm(15400,function(){P('p2',0);c('s-oz',0);spin(0);});}},
+{n:'Step 3',t:'Step 3: Resting and notification',d:'The ozonated water rests in the filters and pipes for a short time to disinfect the system. Then the LCD shows "READY" and the Wi-Fi module sends a "you can flush" notification to the phone.',ms:14000,f:function(){R();clearAll();Lv(1);V(1,0);V(2,0);turb(0);led('#E8F4FA');c('s-rest',1);mkDrift(18);B(1,'Clean','Normal','ok');B(2,'Standing by','Resting','info');cam('W',1200);lcd('CLEANING 3/3','Resting...');tm(6200,function(){cam('L',1300);c('s-rest',0);rmDrift();c('s-led',1);P('p14',1);lcd('READY','Ready to flush');B(2,'Normal','Normal','ok');});tm(9500,function(){cam('Ph',1300);c('s-net',1);P('p16',1);G('nb').classList.add('show');G('nbar').hidden=false;ph('READY','#0B7A75');});}},
+{n:'Flush',t:'Flush and return to normal',d:'When the toilet is flushed, the cistern empties. The Arduino reopens Valve 1; sink water goes through the filters again and refills the cistern.',ms:12500,f:function(){R();clearAll();Lv(1);V(1,0);V(2,0);turb(0);ok();ph('READY','#0B7A75');G('nbar').hidden=false;cam('K',1200);stt.fl=1;T(.6,3500);tm(4500,function(){stt.fl=0;G('nbar').hidden=true;ph('Clean','#0B7A75');cam('V',1200);V(1,1);P('p1',1);c('s-led',1);lcd('System: AUTO','Water flowing');});tm(6200,function(){P('p1',0);c('s-led',0);cam('W',1200);stt.wash=1;stt.dirt=.18;stt.col=.1;c('s-wash',1);spin(1,.6);T(.8,5000);});}},
+{n:'Manual',t:'Manual mode: valves and backup water',d:'Manual is chosen on the phone\'s Control screen. Valves can be opened and closed by hand (the ball valve turns and the LCD updates). If the cistern runs low, backup water (2 L) can be added to it.',ms:15000,f:function(){R();clearAll();Lv(.8);V(1,1);V(2,0);turb(0);ok();cam('Ph',1200);P('p16',1);c('s-net',1);ph('Manual','#4A3BB8');tm(1200,function(){mode('m');});tm(2600,function(){cam('V',1300);c('s-act',1);c('s-led',1);lcd('Mode: MANUAL','V1:OPEN V2:SHUT');});tm(4200,function(){P('p1',1);V(1,0);lcd('Mode: MANUAL','V1:SHUT V2:SHUT');});tm(6400,function(){V(1,1);lcd('Mode: MANUAL','V1:OPEN V2:SHUT');});tm(8000,function(){P('p1',0);c('s-act',0);cam('Bk',1300);P('p9',1);stt.bk=1;T(.97,4000);});tm(13000,function(){stt.bk=0;P('p9',0);});}},
+{n:'Result',t:'Result: flush water comes from the sink',d:'By capturing sink water every day, the system aims to cover all of a household\'s toilet flushing demand and saves tens of thousands of liters of clean water a year.',ms:0,f:function(){R();clearAll();Lv(.9);V(1,1);V(2,0);turb(0);led('#E8F4FA');ok();ph('Clean','#0B7A75');lcd('System: AUTO','Water flowing');stt.wash=1;stt.dirt=.15;stt.col=.1;c('s-wash',1);spin(1,.6);cam('F',1500);}}
+];
+var sl=G('scs');
+S.forEach(function(s,i){
+ var li=document.createElement('li'),b=document.createElement('button');b.type='button';b.className='st';b.setAttribute('aria-current','false');
+ var n=document.createElement('span');n.className='num';n.textContent=i+1;
+ var tx=document.createElement('span');tx.className='tx';
+ var h=document.createElement('b');h.textContent=s.t;
+ var d=document.createElement('span');d.className='sd';d.textContent=s.d;
+ tx.appendChild(h);tx.appendChild(d);b.appendChild(n);b.appendChild(tx);li.appendChild(b);sl.appendChild(li);
+ b.onclick=function(){paused=false;svg.classList.remove('paused');go(i);};
+});
+function go(i){timers.forEach(clearTimeout);timers=[];cur=i;var s=S[i];
+ Array.prototype.forEach.call(sl.children,function(li,k){li.firstChild.setAttribute('aria-current',k===i?'step':'false');});
+ G('pp').textContent='Pause';s.f();
+ if(s.ms>0)tm(s.ms,function(){go(i+1);});else G('pp').textContent='Replay';}
+G('pv').onclick=function(){paused=false;svg.classList.remove('paused');go(Math.max(0,cur-1));};
+G('nx').onclick=function(){paused=false;svg.classList.remove('paused');go(Math.min(S.length-1,cur+1));};
+G('pp').onclick=function(){
+ if(cur===S.length-1&&!paused){go(0);return;}
+ paused=!paused;svg.classList.toggle('paused',paused);
+ if(paused){timers.forEach(clearTimeout);timers=[];cancelAnimationFrame(raf);cancelAnimationFrame(cvr);G('pp').textContent='Resume';}
+ else{go(cur);}
+};
+paint();go(0);
+try{if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)G('pp').click();}catch(e){}
+
+/* Parts index */
+var D={
+1:{n:"Sink",r:"Source of greywater. Water from the bathroom sink enters the system here.",i:"Tap water",o:"Valve 1",t:"The setup in the app is built for a bathroom sink.",l:[2]},
+2:{n:"Valve 1",r:"Directs sink water to the cistern.",i:"Sink",o:"Ceramic filter (the ozone line joins after this point)",t:"Open during normal operation. Closes during ozone cleaning. In manual mode it can be opened and closed from the app.",l:[1,3,14]},
+3:{n:"Ceramic filter",r:"Traps coarse dirt in the greywater.",i:"Valve 1 line and ozone tank",o:"Activated carbon filter",t:"Life 78%, about 5 months left. During ozone cleaning, ozonated water passes through this filter.",l:[2,10,4]},
+4:{n:"Activated carbon filter",r:"Reduces odor and color.",i:"Ceramic filter",o:"Flow sensor, then color sensor",t:"Life 42%, about 2 months left. Replacement is suggested for January 2027.",l:[3,5]},
+5:{n:"Flow sensor",r:"Measures the flow rate in the line.",i:"Activated carbon filter",o:"Color sensor",t:"The reading goes to the Arduino. Unexpected continuous flow is reported as a leak warning.",l:[4,6,14]},
+6:{n:"Color sensor",r:"Measures water turbidity.",i:"Flow sensor",o:"Cistern",t:"If turbidity passes the threshold, the Arduino starts ozone cleaning by itself.",l:[5,7,14]},
+7:{n:"Cistern",r:"Stores treated greywater (4 L).",i:"Color sensor line and backup water",o:"Toilet",t:"The float measures the level. During cleaning, Valve 2 closes when the overflow point is detected. The backup water threshold is 0.5 L.",l:[6,8,9,14]},
+8:{n:"Toilet",r:"Uses the cistern water for flushing.",i:"Cistern",o:"Drain",t:"Do not flush while ozone cleaning is running. The app tells you when cleaning is done.",l:[7]},
+9:{n:"Backup water tank",r:"2 L clean water tank.",i:"Clean water",o:"Cistern",t:"Kicks in when the cistern runs low. The app has an \"Add backup water (2 L)\" button.",l:[7]},
+10:{n:"Ozone tank",r:"Holds the ozone gas used for cleaning.",i:"Valve 2 (clean water)",o:"Filter line (between Valve 1 and the ceramic filter)",t:"Fill level 62%. Refilling the gas is the only step that needs user action. A reminder can be set in the app.",l:[12,11,3]},
+11:{n:"Pressure gauge",r:"Shows the ozone tank pressure.",i:"Ozone tank",o:"Arduino",t:"Before cleaning starts, the Arduino checks the pressure. If there is enough gas, the system gets ready.",l:[10,14]},
+12:{n:"Valve 2",r:"Opens the clean water line.",i:"Mains water",o:"Ozone tank",t:"During cleaning Valve 2 opens and Valve 1 closes; about 2 L of pressurized water runs through the filters. It closes at the overflow point.",l:[13,10,14]},
+13:{n:"Mains water",r:"Clean water source.",i:"Mains supply",o:"Valve 2",t:"The clean water needed for ozone cleaning comes from here.",l:[12]},
+14:{n:"Arduino",r:"The system's decision maker.",i:"Flow, color, pressure and float data; commands from Wi-Fi",o:"Valve 1, Valve 2, backup water, Wi-Fi module, LCD screen",t:"When sensor values go out of range it starts cleaning. If nothing trips, it cleans once a month (an every-3-weeks option exists). In automatic mode it manages the valves and backup water itself.",l:[2,5,6,7,11,12,15,17]},
+15:{n:"Wi-Fi module",r:"Connects the Arduino to the internet.",i:"Arduino",o:"Phone app",t:"Remote control and notifications work through this link. The connection is two-way.",l:[14,16]},
+16:{n:"Phone app",r:"Dashboard, savings, control and maintenance screens.",i:"Wi-Fi module",o:"Wi-Fi module (commands)",t:"Automatic/manual mode, starting and stopping cleaning, valve switches and notifications are managed here.",l:[15]},
+17:{n:"LCD screen",r:"Shows system status as text on the device.",i:"Arduino",o:"None (display only)",t:"Mode, warnings, cleaning step, valve state and the READY message appear here. Only plain ASCII characters are used, since most LCDs cannot show accented letters.",l:[14]}
+};
+var chips=G('chips'),dt=G('detail'),chipEls={};
+function row(box,k,v){var d=document.createElement('div');d.className='row';var b=document.createElement('b');b.textContent=k;var s=document.createElement('span');s.textContent=v;d.appendChild(b);d.appendChild(s);box.appendChild(d);}
+function pick(id){
+ var x=D[id];if(!x)return;
+ Object.keys(chipEls).forEach(function(k){chipEls[k].setAttribute('aria-pressed',+k===id?'true':'false');});
+ dt.textContent='';
+ var h=document.createElement('h3');h.textContent=id+'. '+x.n;dt.appendChild(h);
+ row(dt,'Role',x.r);row(dt,'Input',x.i);row(dt,'Output',x.o);row(dt,'Note',x.t);
+ var d=document.createElement('div');d.className='row';var b=document.createElement('b');b.textContent='Connected to';d.appendChild(b);
+ var w=document.createElement('div');w.className='lks';
+ x.l.forEach(function(k){var a=document.createElement('button');a.type='button';a.className='lk';a.textContent=k+'. '+D[k].n;a.onclick=function(){pick(k);};w.appendChild(a);});
+ d.appendChild(w);dt.appendChild(d);
+}
+Object.keys(D).forEach(function(k){var b=document.createElement('button');b.type='button';b.className='chip';b.setAttribute('aria-pressed','false');b.textContent=k+'. '+D[k].n;b.onclick=function(){pick(+k);};chips.appendChild(b);chipEls[k]=b;});
+pick(14);
+</script>
+
+<script>
+/* Tells the parent page how tall this page is, so an iframe can resize to fit. */
+(function(){
+  function send(){try{parent.postMessage({type:"xylem-greywater-height",height:document.documentElement.scrollHeight},"*");}catch(e){}}
+  addEventListener("load",send);addEventListener("resize",send);
+  if(window.ResizeObserver)new ResizeObserver(send).observe(document.body);
+})();
+</script>
+</body>
+</html>
